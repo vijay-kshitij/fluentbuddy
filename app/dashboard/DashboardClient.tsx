@@ -608,6 +608,19 @@ export default function DashboardClient({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--surface2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 22 }}>🔤</span>
+          <img 
+            src="/bird.png" 
+            alt="FluentBuddy Logo"
+            style={{ 
+              width: 32, 
+              height: 32, 
+              borderRadius: 8,
+              transition: 'transform 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          />
           <span style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 600, color: 'var(--amber)' }}>FluentBuddy</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
