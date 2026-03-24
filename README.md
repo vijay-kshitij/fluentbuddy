@@ -1,6 +1,6 @@
 # FluentBuddy 🐦
 
-**[Live Demo →](https://fluentbuddy-two.vercel.app)**
+**[Live Demo](https://fluentbuddy-two.vercel.app)**
 
 **Your AI English practice partner that remembers everything.**
 
