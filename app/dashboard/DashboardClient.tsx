@@ -70,6 +70,8 @@ export default function DashboardClient({
   const [callSeconds, setCallSeconds] = useState(0);
   const [callConvId, setCallConvId] = useState<string | null>(null);
   const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'active' | 'ended'>('idle');
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [callMessages, setCallMessages] = useState<any[]>([]);
 
   // Refs to avoid stale closures in speech callbacks
   const callActiveRef = useRef(false);
@@ -154,8 +156,18 @@ export default function DashboardClient({
   const buildCallSystemPrompt = () => {
     const persona = profile?.persona || 'friend';
     const p = PERSONAS[persona];
+    const level = profile?.level || 'B1 - Intermediate';
     let prompt = p.system;
-    prompt += `\n\nThe learner's name is ${profile?.name || 'there'}. Their level is ${profile?.level || 'B1 - Intermediate'}.`;
+    prompt += `\n\nThe learner's name is ${profile?.name || 'there'}. Their English level is ${level}.`;
+
+    const levelCode = level.split(' - ')[0];
+    if (levelCode === 'A1' || levelCode === 'A2') {
+      prompt += `\n\nThey are a BEGINNER — use simple words, short sentences, speak slowly. Ask very simple questions.`;
+    } else if (levelCode === 'B1' || levelCode === 'B2') {
+      prompt += `\n\nThey are INTERMEDIATE — use natural everyday English. Encourage longer answers and varied vocabulary.`;
+    } else {
+      prompt += `\n\nThey are ADVANCED — use rich vocabulary, idioms, and complex topics. Challenge them.`;
+    }
 
     if (memoryNotes.length > 0) {
       prompt += `\n\nHere's what you remember about them from past conversations:\n${memoryNotes
@@ -166,11 +178,12 @@ export default function DashboardClient({
 
     prompt += `\n\nYou are on a VOICE CALL with the learner. CRITICAL RULES:
 - This is a spoken conversation. Keep responses SHORT (1-3 sentences max) so it feels like a natural phone call.
+- ONLY ask ONE question per response. Never ask two or more questions. Pick the single most natural follow-up.
 - NEVER use markdown, asterisks, bullet points, or any written formatting. Everything you say will be read aloud by text-to-speech.
 - Do NOT correct spelling, capitalization, or punctuation — the user is SPEAKING, not typing. Their text comes from speech-to-text transcription.
 - DO gently correct grammar mistakes in their speech (wrong verb tense, wrong preposition, etc.) by naturally rephrasing.
 - DO notice vocabulary choices and suggest better words when appropriate.
-- Be conversational and warm. Ask follow-up questions. Keep the conversation flowing naturally like a real phone call.
+- Be conversational and warm. Keep the conversation flowing naturally like a real phone call.
 - If you hear a grammar mistake, correct it casually inline, like: "Oh you mean you WENT there, not goed — but that sounds like a great trip! Tell me more."`;
     return prompt;
   };
@@ -203,6 +216,7 @@ export default function DashboardClient({
       : `Hey ${profile?.name || 'there'}! Nice to meet you. How are you doing today?`;
 
     callTranscriptRef.current.push({ role: 'assistant', content: greeting });
+    setCallMessages([{ role: 'assistant', content: greeting }]);
     if (convId) {
       await db.addMessage(supabase, convId, userId, 'assistant', greeting);
     }
@@ -238,6 +252,7 @@ export default function DashboardClient({
         callProcessingRef.current = true;
         setCallListening(false);
         callTranscriptRef.current.push({ role: 'user', content: text });
+        setCallMessages(prev => [...prev, { role: 'user', content: text }]);
 
         // Save to DB
         const currentConvId = callConvIdRef.current;
@@ -278,6 +293,7 @@ export default function DashboardClient({
           const reply = rawReply.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 
           callTranscriptRef.current.push({ role: 'assistant', content: reply });
+          setCallMessages(prev => [...prev, { role: 'assistant', content: reply }]);
           if (currentConvId) {
             await db.addMessage(supabase, currentConvId, userId, 'assistant', reply);
           }
@@ -394,6 +410,8 @@ export default function DashboardClient({
     callConvIdRef.current = null;
     setCallStatus('idle');
     setCallSeconds(0);
+    setCallMessages([]);
+    setShowTranscript(false);
   };
 
   // Format seconds to mm:ss
@@ -427,8 +445,33 @@ export default function DashboardClient({
   const buildSystemPrompt = () => {
     const persona = profile?.persona || 'friend';
     const p = PERSONAS[persona];
+    const level = profile?.level || 'B1 - Intermediate';
     let prompt = p.system;
-    prompt += `\n\nThe learner's name is ${profile?.name || 'there'}. Their level is ${profile?.level || 'B1 - Intermediate'}.`;
+    prompt += `\n\nThe learner's name is ${profile?.name || 'there'}. Their English level is ${level}.`;
+
+    const levelCode = level.split(' - ')[0];
+    if (levelCode === 'A1' || levelCode === 'A2') {
+      prompt += `\n\nBECAUSE THEY ARE A BEGINNER (${level}):
+- Use simple, short sentences with common everyday words
+- Speak slowly and clearly — avoid idioms, slang, or complex grammar
+- If they struggle, gently offer the correct word or phrase
+- Ask very simple questions (yes/no, "what is your favorite...", "do you like...")
+- Celebrate small wins — even a short correct sentence is great progress`;
+    } else if (levelCode === 'B1' || levelCode === 'B2') {
+      prompt += `\n\nBECAUSE THEY ARE INTERMEDIATE (${level}):
+- Use natural everyday English with some variety in vocabulary
+- Introduce useful phrasal verbs and common expressions naturally
+- Encourage them to use more descriptive language and longer sentences
+- Gently correct grammar mistakes and suggest better phrasing
+- Ask open-ended questions that require more than one-word answers`;
+    } else {
+      prompt += `\n\nBECAUSE THEY ARE ADVANCED (${level}):
+- Use rich, natural English with idioms, nuance, and varied vocabulary
+- Challenge them with complex topics — debate, abstract ideas, hypotheticals
+- Correct subtle mistakes in word choice, preposition use, and sentence structure
+- Encourage precision — help them find the exact right word, not just a correct one
+- Discuss topics in depth rather than surface-level conversation`;
+    }
 
     if (memoryNotes.length > 0) {
       prompt += `\n\nHere's what you remember about them from past conversations:\n${memoryNotes
@@ -446,6 +489,7 @@ export default function DashboardClient({
 
     prompt += `\n\nIMPORTANT RULES:
 - Keep responses SHORT (2-4 sentences). Be encouraging.
+- ONLY ask ONE question per response. Never ask two or more questions. Pick the single most interesting follow-up and ask just that.
 - If they share personal info, remember it.
 - Correct mistakes naturally within conversation flow.
 - NEVER use markdown formatting like **bold**, *italics*, or any asterisks in your responses. Write in plain text only. Your responses will be read aloud by text-to-speech, so they must sound natural when spoken.
@@ -929,6 +973,43 @@ export default function DashboardClient({
                     />
                   ))}
                 </div>
+
+                {/* Transcript toggle */}
+                <button
+                  onClick={() => setShowTranscript(!showTranscript)}
+                  style={{
+                    padding: '8px 20px', borderRadius: 20, marginTop: 16,
+                    background: showTranscript ? 'var(--amber-dim)' : 'var(--surface2)',
+                    color: showTranscript ? 'var(--amber)' : 'var(--text3)',
+                    fontSize: 13, fontWeight: 500,
+                    border: showTranscript ? '1px solid var(--amber)' : '1px solid var(--surface3)',
+                  }}
+                >
+                  {showTranscript ? 'Hide Transcript' : 'Show Transcript'}
+                </button>
+
+                {/* Transcript panel */}
+                {showTranscript && callMessages.length > 0 && (
+                  <div style={{
+                    width: '100%', maxHeight: 180, overflowY: 'auto',
+                    background: 'var(--surface)', borderRadius: 'var(--radius-sm)',
+                    padding: '12px 14px', marginTop: 12,
+                    border: '1px solid var(--surface2)',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    {callMessages.map((msg, i) => (
+                      <div key={i} style={{
+                        fontSize: 12, lineHeight: 1.5,
+                        color: msg.role === 'user' ? 'var(--amber-light)' : 'var(--text2)',
+                      }}>
+                        <span style={{ fontWeight: 600, fontSize: 11, opacity: 0.6 }}>
+                          {msg.role === 'user' ? 'You' : persona.name}:
+                        </span>{' '}
+                        {msg.content}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* End call button */}
                 <button
