@@ -127,4 +127,4 @@ fluentbuddy/
 
 ---
 
-Built with Claude by [Your Name]
+Built with Claude by Kshitij Vijayvergiya
