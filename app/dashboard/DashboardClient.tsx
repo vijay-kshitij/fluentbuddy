@@ -607,7 +607,7 @@ export default function DashboardClient({
       {/* Top Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--surface2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 22 }}>🔤</span>
+          
           <img 
             src="/bird.png" 
             alt="FluentBuddy Logo"
