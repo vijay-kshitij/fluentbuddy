@@ -1,4 +1,4 @@
-# FluentBuddy <img src="/bird.png" />
+# FluentBuddy <img src="/public/bird.png" />
 
 **[Live Demo](https://fluentbuddy-two.vercel.app)**
 
