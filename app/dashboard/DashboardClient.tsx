@@ -1319,11 +1319,12 @@ function OnboardingFlow({ onComplete }: { onComplete: (name: string, level: stri
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 20 }}>
               {LEVELS.map((l) => (
                 <button
-                  key={l}
-                  onClick={() => setLevel(l)}
-                  style={{ padding: '12px 16px', background: level === l ? 'var(--amber-dim)' : 'var(--surface)', color: level === l ? 'var(--text)' : 'var(--text2)', borderRadius: 'var(--radius-sm)', fontSize: 14, textAlign: 'left', border: level === l ? '2px solid var(--amber)' : '2px solid transparent' }}
+                  key={l.id}
+                  onClick={() => setLevel(l.id)}
+                  style={{ padding: '12px 16px', background: level === l.id ? 'var(--amber-dim)' : 'var(--surface)', color: level === l.id ? 'var(--text)' : 'var(--text2)', borderRadius: 'var(--radius-sm)', fontSize: 14, textAlign: 'left' as const, border: level === l.id ? '2px solid var(--amber)' : '2px solid transparent' }}
                 >
-                  {l}
+                  <span style={{ fontWeight: 600, display: 'block' }}>{l.id}</span>
+                  <span style={{ fontSize: 12, color: level === l.id ? 'var(--text2)' : 'var(--text3)', marginTop: 2, display: 'block' }}>{l.desc}</span>
                 </button>
               ))}
             </div>

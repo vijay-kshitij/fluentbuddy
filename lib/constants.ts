@@ -31,10 +31,10 @@ export const PERSONAS: Record<string, {
 };
 
 export const LEVELS = [
-  'A1 - Beginner',
-  'A2 - Elementary',
-  'B1 - Intermediate',
-  'B2 - Upper-Intermediate',
-  'C1 - Advanced',
-  'C2 - Proficient',
+  { id: 'A1 - Beginner', desc: 'I know basic words like hello, yes, no, numbers' },
+  { id: 'A2 - Elementary', desc: 'I can order food, introduce myself, ask simple questions' },
+  { id: 'B1 - Intermediate', desc: 'I can talk about hobbies, work, and daily life with some mistakes' },
+  { id: 'B2 - Upper-Intermediate', desc: 'I can discuss opinions, follow movies, and handle most situations' },
+  { id: 'C1 - Advanced', desc: 'I\'m fluent but want to polish idioms, nuance, and complex topics' },
+  { id: 'C2 - Proficient', desc: 'Near-native — I want to perfect subtle word choices and style' },
 ];
