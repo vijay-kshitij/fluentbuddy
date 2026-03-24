@@ -1,5 +1,7 @@
 # FluentBuddy 🐦
 
+**[Live Demo →](https://fluentbuddy-two.vercel.app)**
+
 **Your AI English practice partner that remembers everything.**
 
 FluentBuddy is an AI-powered English learning app where users practice through real conversations — via text chat or voice calls — with an AI tutor that remembers their life, tracks their progress, and gently corrects mistakes along the way.
