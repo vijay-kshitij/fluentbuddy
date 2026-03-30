@@ -637,6 +637,19 @@ export default function DashboardClient({
     setConversationId(null);
   };
 
+  const resetChatState = () => {
+    setMessages([]);
+    setConversationId(null);
+    setInputText('');
+    setIsThinking(false);
+    setSessionActive(false);
+    setSessionStart(null);
+    setIsListening(false);
+    setIsSpeaking(false);
+    recognitionRef.current?.stop();
+    window.speechSynthesis?.cancel();
+  };
+
   // ── Onboarding save ────────────────────────────────
   const saveOnboarding = async (name: string, level: string, persona: string) => {
     const nextProfile = await db.upsertProfile(supabase, userId, {
@@ -734,7 +747,10 @@ export default function DashboardClient({
                   <button
                     key={key}
                     onClick={async () => {
+                      if (profile?.persona === key) return;
+
                       await db.updateProfile(supabase, userId, { persona: key });
+                      resetChatState();
                       setProfile({ ...profile, persona: key });
                     }}
                     style={{
