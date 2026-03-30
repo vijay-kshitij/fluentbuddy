@@ -15,6 +15,15 @@ type Props = {
   initialStreak: number;
 };
 
+function hasCompletedOnboarding(profile: any) {
+  return Boolean(
+    profile?.onboarded &&
+    profile?.name?.trim() &&
+    profile?.level?.trim() &&
+    profile?.persona?.trim()
+  );
+}
+
 export default function DashboardClient({
   userId,
   initialProfile,
@@ -28,7 +37,7 @@ export default function DashboardClient({
 
   // Profile & settings
   const [profile, setProfile] = useState(initialProfile);
-  const [needsOnboarding, setNeedsOnboarding] = useState(!initialProfile?.onboarded);
+  const [needsOnboarding, setNeedsOnboarding] = useState(!hasCompletedOnboarding(initialProfile));
 
   // Chat state
   const [messages, setMessages] = useState<any[]>([]);
@@ -630,8 +639,14 @@ export default function DashboardClient({
 
   // ── Onboarding save ────────────────────────────────
   const saveOnboarding = async (name: string, level: string, persona: string) => {
-    await db.updateProfile(supabase, userId, { name, level, persona, onboarded: true });
-    setProfile({ ...profile, name, level, persona, onboarded: true });
+    const nextProfile = await db.upsertProfile(supabase, userId, {
+      name: name.trim(),
+      level,
+      persona,
+      onboarded: true,
+    });
+
+    setProfile(nextProfile ?? { ...profile, name: name.trim(), level, persona, onboarded: true });
     setNeedsOnboarding(false);
   };
 

@@ -21,6 +21,22 @@ export const db = {
     return data;
   },
 
+  async upsertProfile(supabase: SupabaseClient, userId: string, updates: any) {
+    const { data } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: userId,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
+      .select()
+      .single();
+    return data;
+  },
+
   // ── Conversations ────────────────────────────
   async createConversation(supabase: SupabaseClient, userId: string, persona: string) {
     const { data } = await supabase
